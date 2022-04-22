@@ -12,6 +12,8 @@ impl Tracing {
 
 unsafe impl GlobalAlloc for Tracing {
     unsafe fn alloc(&self, layout: std::alloc::Layout) -> *mut u8 {
+        let s = "allocating!\n";
+        libc::write(libc::STDOUT_FILENO, s.as_ptr() as _, s.len() as _);
         self.inner.alloc(layout)
     }
 
