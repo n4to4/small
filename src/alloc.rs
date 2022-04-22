@@ -1,6 +1,7 @@
 use serde::{Deserialize, Serialize};
 use std::alloc::{GlobalAlloc, System};
 use std::io::Cursor;
+use std::sync::atomic::{AtomicBool, Ordering};
 
 #[derive(Clone, Copy, Serialize, Deserialize)]
 pub enum Event {
@@ -10,11 +11,19 @@ pub enum Event {
 
 pub struct Tracing {
     pub inner: System,
+    pub active: AtomicBool,
 }
 
 impl Tracing {
     pub const fn new() -> Self {
-        Self { inner: System }
+        Self {
+            inner: System,
+            active: AtomicBool::new(false),
+        }
+    }
+
+    pub fn set_active(&self, active: bool) {
+        self.active.store(active, Ordering::SeqCst);
     }
 
     fn write_ev(&self, ev: Event) {
@@ -36,14 +45,22 @@ impl Tracing {
 unsafe impl GlobalAlloc for Tracing {
     unsafe fn alloc(&self, layout: std::alloc::Layout) -> *mut u8 {
         let res = self.inner.alloc(layout);
-        self.write_ev(Event::Alloc {
-            addr: res as _,
-            size: layout.size(),
-        });
+        if self.active.load(Ordering::SeqCst) {
+            self.write_ev(Event::Alloc {
+                addr: res as _,
+                size: layout.size(),
+            });
+        }
         res
     }
 
     unsafe fn dealloc(&self, ptr: *mut u8, layout: std::alloc::Layout) {
+        if self.active.load(Ordering::SeqCst) {
+            self.write_ev(Event::Freed {
+                addr: ptr as _,
+                size: layout.size(),
+            });
+        }
         self.inner.dealloc(ptr, layout)
     }
 }

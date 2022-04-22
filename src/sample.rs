@@ -23,7 +23,9 @@ impl Sample {
 
         use std::fs::File;
         let f = File::open("cities.json").unwrap();
+        crate::ALLOCATOR.set_active(true);
         let records: Vec<Record> = serde_json::from_reader(f).unwrap();
+        crate::ALLOCATOR.set_active(false);
         println!("Read {} records", records.len());
     }
 }
