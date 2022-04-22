@@ -1,5 +1,6 @@
 use argh::FromArgs;
 use parse_display::{Display, FromStr};
+use smartstring::{LazyCompact, SmartString};
 
 #[derive(FromArgs)]
 /// Run sample code
@@ -23,7 +24,7 @@ impl Sample {
         match self.lib {
             Lib::Std => self.read_records::<String>(),
             Lib::Smol => self.read_records::<smol_str::SmolStr>(),
-            Lib::Smart => todo!(),
+            Lib::Smart => self.read_records::<SmartString<LazyCompact>>(),
         }
     }
 
