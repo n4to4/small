@@ -1,4 +1,5 @@
 pub mod alloc;
+pub mod report;
 pub mod sample;
 
 use argh::FromArgs;
@@ -17,12 +18,14 @@ struct Args {
 #[argh(subcommand)]
 enum Subcommand {
     Sample(sample::Sample),
+    Report(report::Report),
 }
 
 impl Subcommand {
     fn run(self) {
         match self {
             Subcommand::Sample(x) => x.run(),
+            Subcommand::Report(x) => x.run(),
         }
     }
 }
