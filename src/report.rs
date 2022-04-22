@@ -72,7 +72,7 @@ impl Report {
             .nice();
 
         println!("    total events | {}", events.len());
-        println!("    peak events  | {}", ByteSize(peak_bytes as _));
+        println!("    peak bytes   | {}", ByteSize(peak_bytes as _));
         println!("    ------------------------------");
         println!("    alloc events | {}", alloc_events);
         println!("    alloc bytes  | {}", ByteSize(alloc_bytes as _));
